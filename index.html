@@ -2,24 +2,22 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SPF Extractor Turbo</title>
+<title>SPF Extractor</title>
 
 <style>
 body{
-  margin:0;
   font-family:Arial;
-  background:#020617;
+  background:#0f172a;
   color:white;
   text-align:center;
   padding:40px;
 }
 
 .box{
-  border:2px dashed #444;
+  border:2px dashed #555;
   padding:30px;
-  margin:15px;
+  margin:20px;
   border-radius:10px;
-  cursor:pointer;
 }
 
 button{
@@ -29,19 +27,6 @@ button{
   color:white;
   border-radius:10px;
   cursor:pointer;
-}
-
-.progress{
-  height:8px;
-  background:#222;
-  margin-top:20px;
-  border-radius:10px;
-}
-
-.bar{
-  height:100%;
-  width:0%;
-  background:#22c55e;
 }
 
 pre{
@@ -56,45 +41,65 @@ pre{
 
 <body>
 
-<h1>⚡ SPF Extractor TURBO</h1>
+<h1>SPF Extractor (Stable)</h1>
 
-<div class="box" onclick="file1.click()">Domains File</div>
-<input type="file" id="file1" hidden>
+<div class="box">
+  Domains Available<br><br>
+  <input type="file" id="file1">
+</div>
 
-<div class="box" onclick="file2.click()">Master File</div>
-<input type="file" id="file2" hidden>
+<div class="box">
+  Master with include<br><br>
+  <input type="file" id="file2">
+</div>
 
-<button onclick="run()">🚀 Start</button>
-
-<div class="progress"><div class="bar" id="bar"></div></div>
+<button onclick="extract()">Extract Matches</button>
 
 <pre id="output"></pre>
 
 <script>
-let worker = new Worker("worker.js");
+function clean(t){
+  return t.toLowerCase().trim();
+}
 
-worker.onmessage = e => {
-  if(e.data.type === "progress"){
-    bar.style.width = e.data.value + "%";
-  }
-  if(e.data.type === "done"){
-    output.textContent = e.data.result.join("\n") || "No matches";
-  }
-};
-
-async function run(){
-  const f1 = file1.files[0];
-  const f2 = file2.files[0];
+async function extract(){
+  const f1 = document.getElementById("file1").files[0];
+  const f2 = document.getElementById("file2").files[0];
 
   if(!f1 || !f2){
-    alert("Upload files");
+    alert("Upload both files");
     return;
   }
 
   const text1 = await f1.text();
   const text2 = await f2.text();
 
-  worker.postMessage({text1, text2});
+  const domains = text1.split(/\r?\n/)
+    .map(clean)
+    .filter(Boolean);
+
+  const lines = text2.split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  let results = new Set();
+
+  for(let line of lines){
+    let lowerLine = clean(line);
+
+    for(let d of domains){
+      if(lowerLine.includes(d)){
+        let domain = line.split(":")[0].trim();
+        results.add(domain);
+        break;
+      }
+    }
+  }
+
+  const final = [...results];
+
+  document.getElementById("output").textContent =
+    final.length ? final.join("\n") : "No matches found";
 }
 </script>
 
