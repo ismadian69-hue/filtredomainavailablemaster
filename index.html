@@ -1,75 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>SPF Extractor</title>
-
-<style>
-  body {
-    font-family: Arial;
-    background: #0f172a;
-    color: white;
-    text-align: center;
-    padding: 40px;
-  }
-
-  .box {
-    border: 2px dashed #555;
-    padding: 30px;
-    margin: 20px;
-    border-radius: 10px;
-  }
-
-  button {
-    background: #6366f1;
-    border: none;
-    padding: 12px 25px;
-    color: white;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #4f46e5;
-  }
-
-  pre {
-    text-align: left;
-    background: #020617;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 10px;
-    max-height: 300px;
-    overflow: auto;
-  }
-</style>
-</head>
-
-<body>
-
-<h1>SPF Extractor</h1>
-
-<div class="box">
-  <p>Domains Available</p>
-  <input type="file" id="file1">
-</div>
-
-<div class="box">
-  <p>Master with include</p>
-  <input type="file" id="file2">
-</div>
-
-<button onclick="extract()">Extract Matches</button>
-
-<pre id="output"></pre>
-
 <script>
-async function readFile(file) {
+async function readFileLines(file) {
   const text = await file.text();
-  return new Set(
-    text.split("\n").map(l => l.trim()).filter(l => l)
-  );
+  return text.split("\n").map(l => l.trim()).filter(l => l);
+}
+
+async function readDomains(file) {
+  const lines = await readFileLines(file);
+  return new Set(lines);
 }
 
 async function extract() {
@@ -81,15 +18,21 @@ async function extract() {
     return;
   }
 
-  const set1 = await readFile(f1);
-  const set2 = await readFile(f2);
+  const domains = await readDomains(f1);
+  const lines = await readFileLines(f2);
 
-  const matches = [...set1].filter(x => set2.has(x));
+  const results = [];
+
+  for (let line of lines) {
+    for (let domain of domains) {
+      if (line.includes(domain)) {
+        results.push(line);
+        break; // باش ما يعاودش نفس ligne
+      }
+    }
+  }
 
   document.getElementById("output").textContent =
-    matches.length ? matches.join("\n") : "No matches found";
+    results.length ? results.join("\n") : "No matches found";
 }
 </script>
-
-</body>
-</html>
