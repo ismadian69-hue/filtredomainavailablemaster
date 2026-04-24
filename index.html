@@ -2,143 +2,196 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPF Extractor X</title>
+<title>SPF Extractor Pro Max</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(120deg, #020617, #0f172a);
-  color: white;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#020617;
+  color:#e2e8f0;
+  display:flex;
 }
 
-.wrapper {
-  max-width: 1100px;
-  margin: 60px auto;
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#020617;
+  border-right:1px solid #1e293b;
+  padding:20px;
+}
+.logo{
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:30px;
+}
+.menu{
+  color:#94a3b8;
+  font-size:14px;
 }
 
-.title {
-  text-align: center;
-  font-size: 34px;
-  margin-bottom: 40px;
+/* MAIN */
+.main{
+  flex:1;
+  padding:30px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
 }
 
-.card {
-  backdrop-filter: blur(15px);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 15px;
-  padding: 25px;
-  transition: 0.3s;
+.badge{
+  background:#1e293b;
+  padding:5px 10px;
+  border-radius:8px;
+  font-size:12px;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  border-color: #6366f1;
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
 }
 
-.drop {
-  border: 2px dashed rgba(255,255,255,0.2);
-  padding: 40px;
-  text-align: center;
-  border-radius: 12px;
-  cursor: pointer;
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:15px;
+  padding:20px;
 }
 
-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 20px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
+.drop{
+  border:2px dashed #334155;
+  padding:30px;
+  text-align:center;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.3s;
+}
+.drop:hover{
+  border-color:#6366f1;
+  background:#020617;
 }
 
-button:hover {
-  opacity: 0.9;
+button{
+  width:100%;
+  margin-top:20px;
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6);
+  color:white;
+  font-size:16px;
+  cursor:pointer;
 }
 
-.output {
-  margin-top: 30px;
-  background: black;
-  padding: 20px;
-  border-radius: 12px;
-  max-height: 300px;
-  overflow: auto;
-  font-size: 13px;
+.progress{
+  height:6px;
+  background:#1e293b;
+  border-radius:10px;
+  margin-top:15px;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:#22c55e;
 }
 
-.stats {
-  margin-top: 15px;
-  color: #94a3b8;
+.output{
+  margin-top:25px;
+  background:black;
+  padding:20px;
+  border-radius:12px;
+  max-height:300px;
+  overflow:auto;
+  font-size:13px;
+}
+
+.stats{
+  margin-top:10px;
+  color:#94a3b8;
+  font-size:13px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
+<div class="sidebar">
+  <div class="logo">⚡ SPF Tool</div>
+  <div class="menu">Pro Max Version</div>
+</div>
 
-<div class="title">🚀 SPF Extractor X</div>
+<div class="main">
+
+<div class="header">
+  <h2>SPF Extractor</h2>
+  <div class="badge">Client-side</div>
+</div>
 
 <div class="grid">
 
-  <div class="card">
-    <h3>Domains Available</h3>
-    <div class="drop" onclick="file1.click()">Drop or Click</div>
-    <input type="file" id="file1" hidden>
-    <div id="name1"></div>
-  </div>
+<div class="card">
+  <h3>Domains</h3>
+  <div class="drop" onclick="file1.click()">Drop / Click</div>
+  <input type="file" id="file1" hidden>
+  <div id="n1"></div>
+</div>
 
-  <div class="card">
-    <h3>Master with Include</h3>
-    <div class="drop" onclick="file2.click()">Drop or Click</div>
-    <input type="file" id="file2" hidden>
-    <div id="name2"></div>
-  </div>
+<div class="card">
+  <h3>Master SPF</h3>
+  <div class="drop" onclick="file2.click()">Drop / Click</div>
+  <input type="file" id="file2" hidden>
+  <div id="n2"></div>
+</div>
 
 </div>
 
-<button onclick="extract()">⚡ Extract Now</button>
+<button onclick="extract()">🚀 Extract Matches</button>
+
+<div class="progress"><div class="bar" id="bar"></div></div>
 
 <div class="stats" id="stats"></div>
 
-<div class="output" id="output">Waiting...</div>
+<div class="output" id="output">Ready...</div>
+
+<button onclick="download()">⬇ Download</button>
 
 </div>
 
 <script>
-let results = [];
+let results=[];
 
 function clean(t){
   return t.toLowerCase().replace(/[^\x00-\x7F]/g,"").trim();
 }
 
-file1.onchange = e => name1.textContent = e.target.files[0].name;
-file2.onchange = e => name2.textContent = e.target.files[0].name;
+file1.onchange=e=>n1.textContent=e.target.files[0].name;
+file2.onchange=e=>n2.textContent=e.target.files[0].name;
 
 async function extract(){
-  const f1 = file1.files[0];
-  const f2 = file2.files[0];
+  const f1=file1.files[0];
+  const f2=file2.files[0];
+  if(!f1||!f2)return alert("Upload files");
 
-  if(!f1 || !f2) return alert("Upload files");
+  const bar=document.getElementById("bar");
+  bar.style.width="10%";
 
-  const d1 = (await f1.text()).split(/\r?\n/).map(clean).filter(Boolean);
-  const d2 = (await f2.text()).split(/\r?\n/).filter(Boolean);
+  const d1=(await f1.text()).split(/\r?\n/).map(clean).filter(Boolean);
+  const d2=(await f2.text()).split(/\r?\n/).filter(Boolean);
 
-  results = [];
+  bar.style.width="40%";
+
+  results=[];
+  let i=0;
 
   for(let line of d2){
-    let low = clean(line);
+    let low=clean(line);
 
     for(let d of d1){
       if(low.includes(d)){
@@ -146,10 +199,28 @@ async function extract(){
         break;
       }
     }
+
+    i++;
+    if(i%20===0){
+      bar.style.width=(40+(i/d2.length)*60)+"%";
+      await new Promise(r=>setTimeout(r,1));
+    }
   }
 
-  output.textContent = results.length ? results.join("\n") : "No matches";
-  stats.textContent = "Matches: " + results.length;
+  bar.style.width="100%";
+
+  output.textContent=results.length?results.join("\n"):"No matches";
+  stats.textContent="Matches: "+results.length;
+}
+
+function download(){
+  if(!results.length)return alert("No data");
+
+  const blob=new Blob([results.join("\n")],{type:"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="results.txt";
+  a.click();
 }
 </script>
 
