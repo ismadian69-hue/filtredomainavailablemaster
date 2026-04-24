@@ -1,135 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>SPF Extractor Pro</title>
+<title>SPF Extractor</title>
 
 <style>
-body {
-  margin:0;
+body{
   font-family:Arial;
-  background:#020617;
-  color:#e2e8f0;
-  display:flex;
-}
-
-.sidebar{
-  width:220px;
-  background:#020617;
-  border-right:1px solid #1e293b;
-  padding:20px;
-}
-
-.logo{
-  font-size:20px;
-  font-weight:bold;
-}
-
-.main{
-  flex:1;
-  padding:30px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-}
-
-.card{
-  border:1px solid #1e293b;
-  padding:20px;
-  border-radius:12px;
-}
-
-.drop{
-  border:2px dashed #334155;
-  padding:30px;
+  background:#0f172a;
+  color:white;
   text-align:center;
+  padding:40px;
+}
+
+.box{
+  border:2px dashed #555;
+  padding:30px;
+  margin:20px;
   border-radius:10px;
-  cursor:pointer;
 }
 
 button{
-  width:100%;
-  margin-top:20px;
-  padding:15px;
-  border:none;
-  border-radius:10px;
+  padding:15px 30px;
   background:#6366f1;
+  border:none;
   color:white;
+  border-radius:10px;
   cursor:pointer;
 }
 
-.output{
-  margin-top:20px;
+pre{
   background:black;
   padding:20px;
-  border-radius:10px;
+  margin-top:20px;
   max-height:300px;
   overflow:auto;
-}
-
-.stats{
-  margin-top:10px;
-  color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <div class="logo">⚡ SPF Tool</div>
+<h1>SPF Extractor (Stable)</h1>
+
+<div class="box">
+  Domains Available<br><br>
+  <input type="file" id="file1">
 </div>
 
-<div class="main">
-
-<h2>SPF Extractor</h2>
-
-<div class="grid">
-
-<div class="card">
-  <h3>Domains</h3>
-  <div class="drop" onclick="file1.click()">Click to upload</div>
-  <input type="file" id="file1" hidden>
-  <div id="n1"></div>
+<div class="box">
+  Master with include<br><br>
+  <input type="file" id="file2">
 </div>
 
-<div class="card">
-  <h3>Master SPF</h3>
-  <div class="drop" onclick="file2.click()">Click to upload</div>
-  <input type="file" id="file2" hidden>
-  <div id="n2"></div>
-</div>
+<button onclick="extract()">Extract Matches</button>
 
-</div>
-
-<button onclick="extract()">Extract</button>
-
-<div class="stats" id="stats"></div>
-
-<div class="output" id="output">Waiting...</div>
-
-<button onclick="download()">Download</button>
-
-</div>
+<pre id="output"></pre>
 
 <script>
-let results = new Set();
-
 function clean(t){
-  return t.toLowerCase()
-    .replace(/[^\x00-\x7F]/g,"")
-    .trim();
+  return t.toLowerCase().trim();
 }
 
-file1.onchange=e=>n1.textContent=e.target.files[0].name;
-file2.onchange=e=>n2.textContent=e.target.files[0].name;
-
 async function extract(){
-  const f1=file1.files[0];
-  const f2=file2.files[0];
+  const f1 = document.getElementById("file1").files[0];
+  const f2 = document.getElementById("file2").files[0];
 
   if(!f1 || !f2){
     alert("Upload both files");
@@ -147,13 +82,13 @@ async function extract(){
     .map(l => l.trim())
     .filter(Boolean);
 
-  results = new Set();
+  let results = new Set();
 
   for(let line of lines){
-    let low = clean(line);
+    let lowerLine = clean(line);
 
     for(let d of domains){
-      if(low.includes(d)){
+      if(lowerLine.includes(d)){
         let domain = line.split(":")[0].trim();
         results.add(domain);
         break;
@@ -164,24 +99,7 @@ async function extract(){
   const final = [...results];
 
   document.getElementById("output").textContent =
-    final.length ? final.join("\n") : "No matches";
-
-  document.getElementById("stats").textContent =
-    "Domains found: " + final.length;
-}
-
-function download(){
-  if(!results.size){
-    alert("No data");
-    return;
-  }
-
-  const blob = new Blob([[...results].join("\n")], {type:"text/plain"});
-  const a = document.createElement("a");
-
-  a.href = URL.createObjectURL(blob);
-  a.download = "domains.txt";
-  a.click();
+    final.length ? final.join("\n") : "No matches found";
 }
 </script>
 
