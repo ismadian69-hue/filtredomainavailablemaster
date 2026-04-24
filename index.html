@@ -1,70 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPF Extractor</title>
+<title>SPF Extractor Fast</title>
 
 <style>
 body{
+  margin:0;
   font-family:Arial;
-  background:#0f172a;
-  color:white;
-  text-align:center;
-  padding:40px;
+  background:#020617;
+  color:#e2e8f0;
+  display:flex;
 }
 
-.box{
-  border:2px dashed #555;
+.sidebar{
+  width:200px;
+  border-right:1px solid #1e293b;
+  padding:20px;
+}
+
+.main{
+  flex:1;
   padding:30px;
-  margin:20px;
-  border-radius:10px;
 }
 
-button{
-  padding:15px 30px;
-  background:#6366f1;
-  border:none;
-  color:white;
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.card{
+  border:1px solid #1e293b;
+  padding:20px;
+  border-radius:12px;
+}
+
+.drop{
+  border:2px dashed #334155;
+  padding:30px;
+  text-align:center;
   border-radius:10px;
   cursor:pointer;
 }
 
-pre{
+button{
+  width:100%;
+  margin-top:20px;
+  padding:15px;
+  border:none;
+  border-radius:10px;
+  background:#6366f1;
+  color:white;
+  cursor:pointer;
+}
+
+.output{
+  margin-top:20px;
   background:black;
   padding:20px;
-  margin-top:20px;
+  border-radius:10px;
   max-height:300px;
   overflow:auto;
+}
+
+.stats{
+  margin-top:10px;
+  color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<h1>SPF Extractor (Stable)</h1>
-
-<div class="box">
-  Domains Available<br><br>
-  <input type="file" id="file1">
+<div class="sidebar">
+  <h3>⚡ SPF Tool</h3>
 </div>
 
-<div class="box">
-  Master with include<br><br>
-  <input type="file" id="file2">
+<div class="main">
+
+<h2>SPF Extractor (FAST)</h2>
+
+<div class="grid">
+
+<div class="card">
+  <h3>Domains</h3>
+  <div class="drop" onclick="file1.click()">Upload file</div>
+  <input type="file" id="file1" hidden>
+  <div id="n1"></div>
 </div>
 
-<button onclick="extract()">Extract Matches</button>
+<div class="card">
+  <h3>Master SPF</h3>
+  <div class="drop" onclick="file2.click()">Upload file</div>
+  <input type="file" id="file2" hidden>
+  <div id="n2"></div>
+</div>
 
-<pre id="output"></pre>
+</div>
+
+<button onclick="extract()">Extract</button>
+
+<div class="stats" id="stats"></div>
+
+<div class="output" id="output">Waiting...</div>
+
+<button onclick="download()">Download</button>
+
+</div>
 
 <script>
+let results = new Set();
+
 function clean(t){
-  return t.toLowerCase().trim();
+  return t.toLowerCase()
+    .replace(/[^\x00-\x7F]/g,"")
+    .trim();
 }
 
+file1.onchange = e => n1.textContent = e.target.files[0].name;
+file2.onchange = e => n2.textContent = e.target.files[0].name;
+
 async function extract(){
-  const f1 = document.getElementById("file1").files[0];
-  const f2 = document.getElementById("file2").files[0];
+  const f1 = file1.files[0];
+  const f2 = file2.files[0];
 
   if(!f1 || !f2){
     alert("Upload both files");
@@ -74,32 +133,51 @@ async function extract(){
   const text1 = await f1.text();
   const text2 = await f2.text();
 
-  const domains = text1.split(/\r?\n/)
-    .map(clean)
-    .filter(Boolean);
+  // domains → Set (سريع)
+  const domainSet = new Set(
+    text1.split(/\r?\n/)
+      .map(clean)
+      .filter(Boolean)
+  );
 
-  const lines = text2.split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean);
+  const lines = text2.split(/\r?\n/);
 
-  let results = new Set();
+  results = new Set();
 
   for(let line of lines){
-    let lowerLine = clean(line);
 
-    for(let d of domains){
-      if(lowerLine.includes(d)){
-        let domain = line.split(":")[0].trim();
-        results.add(domain);
-        break;
-      }
+    if(!line.includes(":")) continue;
+
+    // استخراج domain بسرعة
+    let i = line.indexOf(":");
+    let domain = clean(line.slice(0, i));
+
+    if(domainSet.has(domain)){
+      results.add(domain);
     }
   }
 
   const final = [...results];
 
   document.getElementById("output").textContent =
-    final.length ? final.join("\n") : "No matches found";
+    final.length ? final.join("\n") : "No matches";
+
+  document.getElementById("stats").textContent =
+    "Domains found: " + final.length;
+}
+
+function download(){
+  if(!results.size){
+    alert("No data");
+    return;
+  }
+
+  const blob = new Blob([[...results].join("\n")], {type:"text/plain"});
+  const a = document.createElement("a");
+
+  a.href = URL.createObjectURL(blob);
+  a.download = "domains.txt";
+  a.click();
 }
 </script>
 
