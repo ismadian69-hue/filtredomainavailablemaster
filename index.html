@@ -1,7 +1,12 @@
 <script>
 async function readFileLines(file) {
   const text = await file.text();
-  return text.split("\n").map(l => l.trim()).filter(l => l);
+
+  return text
+    .replace(/\r/g, "") // نحيد CR
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
 }
 
 async function extract() {
@@ -13,23 +18,25 @@ async function extract() {
     return;
   }
 
-  // domains available
-  const domains = new Set(await readFileLines(f1));
+  // domains
+  const domains = new Set(
+    (await readFileLines(f1)).map(d => d.toLowerCase())
+  );
 
-  // master file lines
   const lines = await readFileLines(f2);
 
   const results = [];
 
   for (let line of lines) {
-    // ناخدو غير domain لي قبل :
-    const parts = line.split(":");
-    if (parts.length < 1) continue;
+    // نقطع حتى لـ ":" الأول فقط
+    const match = line.match(/^([^:]+)\s*:/);
 
-    const domain = parts[0].trim();
+    if (!match) continue;
+
+    const domain = match[1].trim().toLowerCase();
 
     if (domains.has(domain)) {
-      results.push(line); // نرجعو ligne كاملة
+      results.push(line);
     }
   }
 
