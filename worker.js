@@ -1,11 +1,16 @@
 function clean(t){
-  return t.toLowerCase().trim();
+  return t
+    .toLowerCase()
+    .replace(/\r/g, "")
+    .replace(/\s+/g, "")
+    .trim();
 }
 
 onmessage = function(e){
 
   const {text1, text2} = e.data;
 
+  // domains file
   const domainSet = new Set(
     text1.split(/\r?\n/)
       .map(clean)
@@ -21,11 +26,17 @@ onmessage = function(e){
     let line = lines[i];
     if(!line.includes(":")) continue;
 
+    // extract domain قبل :
     let idx = line.indexOf(":");
-    let domain = clean(line.slice(0, idx));
+    let rawDomain = line.slice(0, idx);
+
+    let domain = clean(rawDomain);
+
+    // DEBUG (مهم)
+    // console.log("CHECK:", domain);
 
     if(domainSet.has(domain)){
-      results.add(domain); // غير domain
+      results.add(domain);
     }
 
     if(i % 500 === 0){
