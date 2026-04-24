@@ -1,14 +1,4 @@
 <script>
-async function readFileLines(file) {
-  const text = await file.text();
-
-  return text
-    .replace(/\r/g, "") // نحيد CR
-    .split("\n")
-    .map(l => l.trim())
-    .filter(l => l.length > 0);
-}
-
 async function extract() {
   const f1 = document.getElementById("file1").files[0];
   const f2 = document.getElementById("file2").files[0];
@@ -18,24 +8,34 @@ async function extract() {
     return;
   }
 
-  // domains
-  const domains = new Set(
-    (await readFileLines(f1)).map(d => d.toLowerCase())
-  );
+  // نقرى الملفات
+  const text1 = (await f1.text()).toLowerCase();
+  const text2 = (await f2.text()).toLowerCase();
 
-  const lines = await readFileLines(f2);
+  // domains (file1)
+  const domains = text1
+    .split(/\r?\n/)
+    .map(d => d.trim())
+    .filter(Boolean);
+
+  const domainSet = new Set(domains);
+
+  // lines (file2)
+  const lines = text2
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
 
   const results = [];
 
   for (let line of lines) {
-    // نقطع حتى لـ ":" الأول فقط
-    const match = line.match(/^([^:]+)\s*:/);
+    // ناخدو domain لي قبل ":" بأي طريقة
+    let domain = line.split(":")[0].trim();
 
-    if (!match) continue;
+    // نحيد spaces زايدة
+    domain = domain.replace(/\s+/g, "");
 
-    const domain = match[1].trim().toLowerCase();
-
-    if (domains.has(domain)) {
+    if (domainSet.has(domain)) {
       results.push(line);
     }
   }
