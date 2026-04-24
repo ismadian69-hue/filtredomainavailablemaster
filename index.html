@@ -1,46 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPF Extractor Pro</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: white;
+  text-align: center;
+}
+
+.container {
+  max-width: 800px;
+  margin: 60px auto;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+.upload-box {
+  border: 2px dashed #444;
+  padding: 30px;
+  margin: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.upload-box:hover {
+  border-color: #6366f1;
+}
+
+button {
+  background: #6366f1;
+  border: none;
+  padding: 14px 30px;
+  color: white;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4f46e5;
+}
+
+.progress {
+  height: 8px;
+  background: #222;
+  border-radius: 10px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0%;
+  background: #22c55e;
+  transition: width 0.3s;
+}
+
+pre {
+  background: #020617;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  max-height: 300px;
+  overflow: auto;
+  text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>SPF Extractor <span style="color:#6366f1;">Pro</span></h1>
+
+  <div class="upload-box" onclick="file1.click()">
+    📂 Domains Available<br>
+    <input type="file" id="file1" hidden>
+  </div>
+
+  <div class="upload-box" onclick="file2.click()">
+    📂 Master with Include<br>
+    <input type="file" id="file2" hidden>
+  </div>
+
+  <button onclick="extract()">Extract Matches</button>
+
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <pre id="output"></pre>
+
+  <button onclick="download()">Download Result</button>
+</div>
+
 <script>
+let lastResult = "";
+
+function clean(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\x00-\x7F]/g, "")
+    .trim();
+}
+
 async function extract() {
   const f1 = document.getElementById("file1").files[0];
   const f2 = document.getElementById("file2").files[0];
+  const bar = document.getElementById("bar");
 
   if (!f1 || !f2) {
     alert("Upload both files!");
     return;
   }
 
-  // نقرى الملفات
-  const text1 = (await f1.text()).toLowerCase();
-  const text2 = (await f2.text()).toLowerCase();
+  bar.style.width = "10%";
 
-  // domains (file1)
-  const domains = text1
-    .split(/\r?\n/)
-    .map(d => d.trim())
-    .filter(Boolean);
+  const text1 = await f1.text();
+  const text2 = await f2.text();
 
-  const domainSet = new Set(domains);
+  bar.style.width = "40%";
 
-  // lines (file2)
-  const lines = text2
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean);
+  const domains = new Set(
+    text1.split(/\r?\n/).map(d => clean(d)).filter(Boolean)
+  );
 
-  const results = [];
+  const lines = text2.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
+  let results = [];
+
+  let i = 0;
   for (let line of lines) {
-    // ناخدو domain لي قبل ":" بأي طريقة
-    let domain = line.split(":")[0].trim();
+    let domain = clean(line.split(":")[0]);
 
-    // نحيد spaces زايدة
-    domain = domain.replace(/\s+/g, "");
-
-    if (domainSet.has(domain)) {
+    if (domains.has(domain)) {
       results.push(line);
+    }
+
+    i++;
+    if (i % 10 === 0) {
+      bar.style.width = (40 + (i / lines.length) * 60) + "%";
+      await new Promise(r => setTimeout(r, 1));
     }
   }
 
+  bar.style.width = "100%";
+
+  lastResult = results.join("\n");
+
   document.getElementById("output").textContent =
-    results.length ? results.join("\n") : "No matches found";
+    results.length ? lastResult : "No matches found";
+}
+
+function download() {
+  if (!lastResult) return alert("No data!");
+
+  const blob = new Blob([lastResult], { type: "text/plain" });
+  const a = document.createElement("a");
+
+  a.href = URL.createObjectURL(blob);
+  a.download = "matches.txt";
+  a.click();
 }
 </script>
+
+</body>
+</html>
