@@ -1,0 +1,22 @@
+def load_file_to_set(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        return set(line.strip() for line in f if line.strip())
+
+# files
+file1 = "domains_available.txt"
+file2 = "master_with_includes.txt"
+output_file = "matches.txt"
+
+# load data
+domains_available = load_file_to_set(file1)
+master_domains = load_file_to_set(file2)
+
+# find matches
+matches = domains_available.intersection(master_domains)
+
+# save results
+with open(output_file, "w", encoding="utf-8") as f:
+    for domain in sorted(matches):
+        f.write(domain + "\n")
+
+print(f"Done! Found {len(matches)} matches.")
