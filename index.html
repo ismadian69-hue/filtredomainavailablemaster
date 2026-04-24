@@ -1,56 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SPF Extractor</title>
 
 <style>
-body{
-  font-family:Arial;
-  background:#0f172a;
-  color:white;
-  text-align:center;
-  padding:40px;
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  padding: 40px;
 }
 
-.box{
-  border:2px dashed #555;
-  padding:30px;
-  margin:20px;
-  border-radius:10px;
+.box {
+  border: 2px dashed #555;
+  padding: 30px;
+  margin: 20px;
+  border-radius: 10px;
 }
 
-button{
-  padding:15px 30px;
-  background:#6366f1;
-  border:none;
-  color:white;
-  border-radius:10px;
-  cursor:pointer;
+button {
+  background: #6366f1;
+  border: none;
+  padding: 12px 25px;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-pre{
-  background:black;
-  padding:20px;
-  margin-top:20px;
-  max-height:300px;
-  overflow:auto;
+button:hover {
+  background: #4f46e5;
+}
+
+pre {
+  text-align: left;
+  background: #020617;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  max-height: 300px;
+  overflow: auto;
+}
+.file-name {
+  margin-top:10px;
+  color:#94a3b8;
+  font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>SPF Extractor (Stable)</h1>
+<h1>SPF Extractor</h1>
 
 <div class="box">
-  Domains Available<br><br>
+  <p>Domains Available</p>
   <input type="file" id="file1">
+  <div id="name1" class="file-name"></div>
 </div>
 
 <div class="box">
-  Master with include<br><br>
+  <p>Master with include</p>
   <input type="file" id="file2">
+  <div id="name2" class="file-name"></div>
 </div>
 
 <button onclick="extract()">Extract Matches</button>
@@ -62,12 +76,20 @@ function clean(t){
   return t.toLowerCase().trim();
 }
 
-async function extract(){
+// display file names
+file1.onchange = e => {
+  name1.textContent = e.target.files[0]?.name || "";
+};
+file2.onchange = e => {
+  name2.textContent = e.target.files[0]?.name || "";
+};
+
+async function extract() {
   const f1 = document.getElementById("file1").files[0];
   const f2 = document.getElementById("file2").files[0];
 
-  if(!f1 || !f2){
-    alert("Upload both files");
+  if (!f1 || !f2) {
+    alert("Upload both files!");
     return;
   }
 
@@ -84,11 +106,11 @@ async function extract(){
 
   let results = new Set();
 
-  for(let line of lines){
+  for (let line of lines) {
     let lowerLine = clean(line);
 
-    for(let d of domains){
-      if(lowerLine.includes(d)){
+    for (let d of domains) {
+      if (lowerLine.includes(d)) {
         let domain = line.split(":")[0].trim();
         results.add(domain);
         break;
