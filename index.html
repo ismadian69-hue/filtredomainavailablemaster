@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPF Extractor Fast</title>
+<title>SPF Extractor Pro</title>
 
 <style>
-body{
+body {
   margin:0;
   font-family:Arial;
   background:#020617;
@@ -14,9 +14,15 @@ body{
 }
 
 .sidebar{
-  width:200px;
+  width:220px;
+  background:#020617;
   border-right:1px solid #1e293b;
   padding:20px;
+}
+
+.logo{
+  font-size:20px;
+  font-weight:bold;
 }
 
 .main{
@@ -74,25 +80,25 @@ button{
 <body>
 
 <div class="sidebar">
-  <h3>⚡ SPF Tool</h3>
+  <div class="logo">⚡ SPF Tool</div>
 </div>
 
 <div class="main">
 
-<h2>SPF Extractor (FAST)</h2>
+<h2>SPF Extractor</h2>
 
 <div class="grid">
 
 <div class="card">
   <h3>Domains</h3>
-  <div class="drop" onclick="file1.click()">Upload file</div>
+  <div class="drop" onclick="file1.click()">Click to upload</div>
   <input type="file" id="file1" hidden>
   <div id="n1"></div>
 </div>
 
 <div class="card">
   <h3>Master SPF</h3>
-  <div class="drop" onclick="file2.click()">Upload file</div>
+  <div class="drop" onclick="file2.click()">Click to upload</div>
   <input type="file" id="file2" hidden>
   <div id="n2"></div>
 </div>
@@ -118,12 +124,12 @@ function clean(t){
     .trim();
 }
 
-file1.onchange = e => n1.textContent = e.target.files[0].name;
-file2.onchange = e => n2.textContent = e.target.files[0].name;
+file1.onchange=e=>n1.textContent=e.target.files[0].name;
+file2.onchange=e=>n2.textContent=e.target.files[0].name;
 
 async function extract(){
-  const f1 = file1.files[0];
-  const f2 = file2.files[0];
+  const f1=file1.files[0];
+  const f2=file2.files[0];
 
   if(!f1 || !f2){
     alert("Upload both files");
@@ -133,27 +139,25 @@ async function extract(){
   const text1 = await f1.text();
   const text2 = await f2.text();
 
-  // domains → Set (سريع)
-  const domainSet = new Set(
-    text1.split(/\r?\n/)
-      .map(clean)
-      .filter(Boolean)
-  );
+  const domains = text1.split(/\r?\n/)
+    .map(clean)
+    .filter(Boolean);
 
-  const lines = text2.split(/\r?\n/);
+  const lines = text2.split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
 
   results = new Set();
 
   for(let line of lines){
+    let low = clean(line);
 
-    if(!line.includes(":")) continue;
-
-    // استخراج domain بسرعة
-    let i = line.indexOf(":");
-    let domain = clean(line.slice(0, i));
-
-    if(domainSet.has(domain)){
-      results.add(domain);
+    for(let d of domains){
+      if(low.includes(d)){
+        let domain = line.split(":")[0].trim();
+        results.add(domain);
+        break;
+      }
     }
   }
 
